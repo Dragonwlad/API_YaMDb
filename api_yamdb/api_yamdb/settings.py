@@ -1,5 +1,6 @@
 from pathlib import Path
 # testtest
+# тест новой ветки
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
