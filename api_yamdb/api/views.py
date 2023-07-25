@@ -2,11 +2,16 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
 from reviews.models import *
-
+from rest_framework import permissions
+from .permissions import IsSuperUserIsAdminIsModeratorIsAuthor
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет Для объектов модели Отзывы"""
     serializer_class=ReviewSerializer
+    permission_classes=(permissions.IsAuthenticatedOrReadOnly,
+                         IsSuperUserIsAdminIsModeratorIsAuthor)
+
+
 
     def get_title(self):
         title_id=self.kwargs.get('title_id')
@@ -22,6 +27,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):    
     """Вьюсет Для объектов модели Комментарии"""
     serializer_class=CommentSerializer
+    permission_classes=(permissions.IsAuthenticatedOrReadOnly,
+                         IsSuperUserIsAdminIsModeratorIsAuthor)
+
 
     def get_review(self):
         review_id=self.kwargs.get('review_id')
@@ -32,5 +40,4 @@ class CommentViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
-
 
