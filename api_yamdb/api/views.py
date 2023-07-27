@@ -59,6 +59,9 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes=(permissions.IsAuthenticatedOrReadOnly,
                          IsSuperUserIsAdminIsModeratorIsAuthor)
 
+    permission_classes=(permissions.IsAuthenticatedOrReadOnly,
+                         IsSuperUserIsAdminIsModeratorIsAuthor)
+
 
     def get_review(self):
         review_id=self.kwargs.get('review_id')
@@ -69,5 +72,4 @@ class CommentViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
-
 
