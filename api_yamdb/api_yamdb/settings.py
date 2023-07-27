@@ -12,6 +12,28 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
+    ],
+
+}
+
+# For permissions
+
+ROLE_CHOICES = (
+    ('user', 'user'),
+    ('moderator', 'moderator'),
+    ('admin', 'admin'),
+)
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -21,6 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'debug_toolbar',
+    'users',
     'api.apps.ApiConfig',
     'core.apps.CoreConfig',
     'users.apps.UsersConfig',
@@ -34,6 +60,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+]
+
+INTERNAL_IPS = [
+    '127.0.0.1',
 ]
 
 ROOT_URLCONF = 'api_yamdb.urls'
