@@ -3,7 +3,7 @@ from rest_framework import serializers
 from users.models import User
 
 
-class AdmineCreateUserSerializer(serializers.ModelSerializer):
+class AdminCreateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ['username',
@@ -18,6 +18,16 @@ class AdmineCreateUserSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ['username',
+                  'email',
+                  ]
+        model = User
+        read_only_fields = ('confirmation_code',)
+
+
+class UserPathSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ['username',
