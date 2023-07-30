@@ -3,6 +3,8 @@ from django.urls import include, path
 from django.views.generic import TemplateView
 from core import views
 
+from users import urls
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('import/', views.data_import),
