@@ -3,12 +3,16 @@ from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from django.db.models import Avg
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 from core.models import Category, Genre, Title, Review, Comment
 from users.models import User
 from .serializers import (CategorySerializer, GenreSerializer, TitleListSerializer,
                           ReviewSerializer, CommentSerializer,
-                          TitleDetailSerializer, TitleManageSerealizer)
+                          TitleDetailSerializer, TitleManageSerealizer,
+                          CategoryListSerializer, GenreListSerializer)
 from .permissions import IsSuperUserIsAdminIsModeratorIsAuthor
 
 
@@ -16,6 +20,13 @@ class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет Для объектов модели Произведения"""
     queryset = Title.objects.all()
     serializer_class = TitleManageSerealizer
+    pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filterset_fields = ('category', 'genre', 'name', 'year')
+
+    permission_classes=(permissions.AllowAny,)
+    # permission_classes=(permissions.IsAuthenticatedOrReadOnly,
+    #                      IsSuperUserIsAdminIsModeratorIsAuthor)
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -25,16 +36,44 @@ class TitleViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
 
-class GenreViewSet(viewsets.ModelViewSet):
-    """Вьюсет Для объектов модели Жанры"""
-    queryset = Genre.objects.all()
-    serializer_class = GenreSerializer
-
-
 class CategoryViewSet(viewsets.ModelViewSet):
     """Вьюсет для объектов модели Категории"""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes=(permissions.AllowAny,)
+    # permission_classes=(permissions.IsAuthenticatedOrReadOnly,
+    #                      IsSuperUserIsAdminIsModeratorIsAuthor)
+    pagination_class = PageNumberPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+
+
+
+    # def get_serializer_class(self):
+    #     if self.action == 'list':
+    #         return CategoryListSerializer
+    #     # if self.action == 'retrieve':
+    #     #     return TitleDetailSerializer
+    #     return super().get_serializer_class()
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    """Вьюсет Для объектов модели Жанры"""
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes=(permissions.IsAuthenticatedOrReadOnly,
+                         IsSuperUserIsAdminIsModeratorIsAuthor)
+    pagination_class = PageNumberPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+
+    # def get_serializer_class(self):
+    #     if self.action == 'list':
+    #         return GenreListSerializer
+    #     # if self.action == 'retrieve':
+    #     #     return TitleDetailSerializer
+    #     return super().get_serializer_class()
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
+import re
 
 from core.models import Category, Genre, Title, TitleGenre, Review, Comment
 from core.models import Review
@@ -8,30 +9,54 @@ class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор модели Category для CRUD операций"""
     class Meta:
         model = Category
-        fields = ('name', )
+        fields = ('name', 'slug')
+
+    def validate_slug(self, value):
+        print(f'>>>>>>>>>>>{value}')
+        result = re.match(r'^[-a-zA-Z0-9_]+$', value)
+        print(result)
+        if result is None:
+            
+            raise serializers.ValidationError('Недопустимые символы!')
+        return value
+
+
+class CategoryListSerializer(serializers.ModelSerializer):
+    """Сериализатор для получения списка категорий"""
+    class Meta:
+        model = Category
+        fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор модели Genre для CRUD операций"""
     class Meta:
         model = Genre
-        fields = ('slug', )
+        fields = ('name', 'slug', )
 
+
+class GenreListSerializer(serializers.ModelSerializer):
+    """Сериализатор модели Genre для получения списка произведений"""
+    class Meta:
+        modlel = Genre
 
 class TitleListSerializer(serializers.ModelSerializer):
     """Сериализатор модели Title для получения списка произведений"""
 
-    category = serializers.SlugRelatedField(
-                                         read_only=False,
-                                         slug_field='slug',
-                                         queryset=Category.objects.all())
-    genre = serializers.SlugRelatedField(many=True,
-                                         read_only=False,
-                                         slug_field='slug',
-                                         queryset=Genre.objects.all())
+    # category = serializers.SlugRelatedField(
+    #                                      read_only=False,
+    #                                      slug_field='slug',
+    #                                      queryset=Category.objects.all())
+    # genre = serializers.SlugRelatedField(many=True,
+    #                                      read_only=False,
+    #                                      slug_field='slug',
+    #                                      queryset=Genre.objects.all())
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
     class Meta:
         model = Title
-        fields = ('name', 'year', 'genre', 'category')
+        fields = ('id', 'category', 'description', 'genre', 'name', 'year')
+        read_only_fields = ['id',]
         
     
 class TitleManageSerealizer(serializers.ModelSerializer):
@@ -48,7 +73,8 @@ class TitleManageSerealizer(serializers.ModelSerializer):
                                          queryset=Genre.objects.all())
     class Meta:
         model = Title
-        fields = ('name', 'description', 'year', 'genre', 'category')
+        fields = ('id', 'name', 'description', 'year', 'genre', 'category')
+        read_only_fields = ['id',]
 
     def create(self, validated_data):
         genres = validated_data.pop('genre')
@@ -64,18 +90,14 @@ class TitleDetailSerializer(serializers.ModelSerializer):
     """
     Сериализатор модели Title для получения подробных данных о произведении
     """
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
 
-    category = serializers.SlugRelatedField(
-                                         read_only=False,
-                                         slug_field='slug',
-                                         queryset=Category.objects.all())
-    genre = serializers.SlugRelatedField(many=True,
-                                         read_only=False,
-                                         slug_field='slug',
-                                         queryset=Genre.objects.all())
     class Meta:
         model = Title
-        fields = ('name', 'description', 'year', 'genre', 'category', 'rating')
+        fields = ('id', 'name', 'description', 'year', 'genre', 'category', 'rating')
+        read_only_fields = ['id',]
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     """

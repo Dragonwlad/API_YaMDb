@@ -18,7 +18,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication'
     ],
-
+    'PAGE_SIZE': 5,
 }
 
 # For permissions
@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'core.apps.CoreConfig',
     'users.apps.UsersConfig',
+    'django_filters', 
+
 ]
 
 MIDDLEWARE = [
