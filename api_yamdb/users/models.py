@@ -7,11 +7,7 @@ from api_yamdb.settings import ROLE_CHOICES
 
 class User(AbstractUser):
     '''Класс пользователей.'''
-<<<<<<< HEAD
-    username_regex = '^[\w.@+-]+\z'
-=======
     username_regex = r'[\w.@+-]+\z'
->>>>>>> 9474fa5 (настроил users победил ошибки)
     # Валидация данных
     username_validator = RegexValidator(
         regex=username_regex,
@@ -24,11 +20,7 @@ class User(AbstractUser):
         unique=True,
     )
 
-<<<<<<< HEAD
-    confirmation_code = models.CharField(max_length=5)
-=======
     confirmation_code = models.CharField(max_length=5, blank=True)
->>>>>>> 9474fa5 (настроил users победил ошибки)
     email = models.EmailField(max_length=254, unique=True)
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)

@@ -4,10 +4,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 
 from core.models import Category, Genre, Title, Review, Comment
-from .serializers import (CategorySerializer, GenreSerializer, TitleListSerializer,
+from api.serializers import (CategorySerializer, GenreSerializer, TitleListSerializer,
                           ReviewSerializer, CommentSerializer,
                           TitleDetailSerializer, TitleManageSerealizer)
-from .permissions import IsSuperUserIsAdminIsModeratorIsAuthor
+from api.permissions import IsOwnerAdminModeratorOrReadOnly
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -39,8 +39,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет Для объектов модели Отзывы"""
     serializer_class=ReviewSerializer
-    permission_classes=(permissions.IsAuthenticatedOrReadOnly,
-                         IsSuperUserIsAdminIsModeratorIsAuthor)
+    permission_classes=(IsOwnerAdminModeratorOrReadOnly, )
 
     def get_title(self):
         title_id=self.kwargs.get('title_id')
@@ -56,11 +55,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):    
     """Вьюсет Для объектов модели Комментарии"""
     serializer_class=CommentSerializer
-    permission_classes=(permissions.IsAuthenticatedOrReadOnly,
-                         IsSuperUserIsAdminIsModeratorIsAuthor)
+    permission_classes=(IsOwnerAdminModeratorOrReadOnly, )
 
-    permission_classes=(permissions.IsAuthenticatedOrReadOnly,
-                         IsSuperUserIsAdminIsModeratorIsAuthor)
+    permission_classes=(IsOwnerAdminModeratorOrReadOnly, )
 
 
     def get_review(self):

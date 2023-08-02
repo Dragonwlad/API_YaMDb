@@ -15,11 +15,8 @@ ALLOWED_HOSTS = ['*']
 
 
 REST_FRAMEWORK = {
-<<<<<<< HEAD
-=======
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,
->>>>>>> 9474fa5 (настроил users победил ошибки)
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
@@ -28,27 +25,18 @@ REST_FRAMEWORK = {
     ],
 
 }
-<<<<<<< HEAD
-=======
 # Устанавливаем срок жизни токена
 SIMPLE_JWT = {
    'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
    'AUTH_HEADER_TYPES': ('Bearer',),
 }
->>>>>>> 9474fa5 (настроил users победил ошибки)
 
 # For permissions
 
 ROLE_CHOICES = (
-<<<<<<< HEAD
-    ('user', 'user'),
-    ('moderator', 'moderator'),
-    ('admin', 'admin'),
-=======
     ('admin', 'admin'),
     ('moderator', 'moderator'),
     ('user', 'user'),
->>>>>>> 9474fa5 (настроил users победил ошибки)
 )
 
 
@@ -66,10 +54,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
-<<<<<<< HEAD
-    'debug_toolbar',
-=======
->>>>>>> 9474fa5 (настроил users победил ошибки)
     'users',
     'api.apps.ApiConfig',
     'core.apps.CoreConfig',
@@ -84,7 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 INTERNAL_IPS = [
