@@ -1,19 +1,27 @@
 import secrets
+
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets, generics
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from users.serializers import AdminCreateUserSerializer, UserCreateSerializer
+from api.permissions import IsAdminOnly
+from users.serializers import (
+    AdminCreateUserSerializer, UserCreateSerializer, UserPathSerializer)
 from users.models import User
 
 
-def create_and_send_confirmation_code(user_email):
-    confirmation_code = secrets.token_urlsafe(4)
+def get_confirmation_code():
+    return secrets.token_urlsafe(3)
+
+
+def send_confirmation_code(user_email, confirmation_code):
     send_mail(
         subject='confirmation_code',
         message=f'confirmation_code - {confirmation_code}',
@@ -21,7 +29,6 @@ def create_and_send_confirmation_code(user_email):
         recipient_list=[user_email],
         fail_silently=True,
     )
-    return confirmation_code
 
 
 @api_view(['POST', ])
@@ -29,36 +36,41 @@ def create_and_send_confirmation_code(user_email):
 def create_user(request):
 
     serializer = UserCreateSerializer(data=request.data)
+
     if serializer.is_valid():
         user_email = request.data['email']
+        confirmation_code = get_confirmation_code()
         serializer.save(
-            confirmation_code=create_and_send_confirmation_code(user_email)
+            confirmation_code=confirmation_code
+        )
+        send_confirmation_code(user_email, confirmation_code)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif ('unique' in str(serializer.errors.get('email'))
+          and 'unique' in str(serializer.errors.get('username'))):
+        user = User.objects.get(username=request.data['username'])
+        send_confirmation_code(
+            user_email=user.email,
+            confirmation_code=user.confirmation_code
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
     else:
-        print('------------', (serializer.errors.get('email')['code']))
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-'''
-{'username': [ErrorDetail(string='пользователь с таким username уже существует.', code='unique')],
- 'email': [ErrorDetail(string='пользователь с таким email уже существует.', code='unique')]
- }
-{'email': [ErrorDetail(string='Введите правильный адрес электронной почты.', code='invalid')]}
-'''
-
-
 class UsersViewSet(viewsets.ModelViewSet):
+    """ViewSet для просмотра пользователей и редактирования
+    данных пользователя."""
     queryset = User.objects.all()
     serializer_class = AdminCreateUserSerializer
-    permission_classes = (AllowAny, )  # после отладки установить ->(IsAdminUser, )
+    http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = (IsAdminOnly, )
     lookup_field = 'username'
+    filter_backends = (SearchFilter, )
+    search_fields = ('username', )
 
     def perform_create(self, serializer):
-        user_email = serializer.validated_data['email']
-        serializer.save(
-            confirmation_code=create_and_send_confirmation_code(user_email)
-        )
+        confirmation_code = get_confirmation_code()
+        serializer.save(confirmation_code=confirmation_code)
 
 
 @api_view(['POST', ])
@@ -86,7 +98,18 @@ def create_token(request):
                         status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserGetPath(generics.RetrieveUpdateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserCreateSerializer
+class UserGetPath(APIView):
+    permission_classes = (IsAuthenticated,)
 
+    def get(self, request):
+        user = request.user
+        serializer = AdminCreateUserSerializer(user)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        user = request.user
+        serializer = UserPathSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
