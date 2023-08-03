@@ -6,8 +6,8 @@ from reviews.models import Title
 class TitleFilter(django_filters.FilterSet):
     """
     Фильтр для запросов к объектам модели Title.
-    Фильтрация осуществляется по slug категории, slug жанра, году и/или названию.
-
+    Фильтрация осуществляется по slug категории,
+    slug жанра, году и/или названию.
     """
     category = django_filters.CharFilter(
         field_name='category__slug', lookup_expr='iexact'

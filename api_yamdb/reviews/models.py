@@ -6,6 +6,7 @@ from users.models import User
 
 
 class Genre(models.Model):
+    """Модель данных для жанров."""
     name = models.CharField('Название',
                             max_length=20)
     slug = models.SlugField('Slug',
@@ -22,6 +23,7 @@ class Genre(models.Model):
 
 
 class Category(models.Model):
+    """Модель данных для категорий."""
     name = models.CharField('Название',
                             max_length=20)
     slug = models.SlugField('Slug',
@@ -37,7 +39,7 @@ class Category(models.Model):
 
 
 class Title (models.Model):
-
+    """Модель данных для произведений."""
     name = models.CharField('Название', max_length=256)
     year = models.IntegerField('Год')
     description = models.TextField('Описание', blank=True)

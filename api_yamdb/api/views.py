@@ -1,24 +1,18 @@
-from django.shortcuts import render
-from django.db.models import Avg
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from api.filters import TitleFilter
-from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Genre, Title, Review
 from .serializers import (CategorySerializer, GenreSerializer,
                           ReviewSerializer, CommentSerializer,
                           TitleSerealizer)
-from .permissions import (IsAdminOrReadOnly, IsOwnerAdminModeratorOrReadOnly,
-                          IsAdminOnly)
+from .permissions import IsAdminOrReadOnly, IsOwnerAdminModeratorOrReadOnly
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -31,7 +25,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_fields = ('category', 'genre', 'name', 'year')
 
-    
+
 class GenreViewSet(viewsets.ModelViewSet):
     """Вьюсет Для объектов модели Жанры"""
     http_method_names = ['get', 'post', 'head', 'put', 'delete']
@@ -44,7 +38,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
     def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED) 
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -54,13 +48,12 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
-    # lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
 
     def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED) 
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -106,4 +99,3 @@ class CommentViewSet(viewsets.ModelViewSet):
         review = self._get_review()
         if review.title == title:
             serializer.save(author=self.request.user, review=review)
-
