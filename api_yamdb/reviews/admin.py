@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import Category, Comment, Genre, Title, Review, TitleGenre
 
 
+@admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'slug')
     search_fields = ('name',)
@@ -10,6 +11,7 @@ class GenreAdmin(admin.ModelAdmin):
     empty_value_display = '-empty-'
 
 
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'slug')
     search_fields = ('name',)
@@ -17,6 +19,7 @@ class CategoryAdmin(admin.ModelAdmin):
     empty_value_display = '-empty-'
 
 
+@admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -29,6 +32,7 @@ class TitleAdmin(admin.ModelAdmin):
     empty_value_display = '-empty-'
 
 
+@admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
     list_display = (
         "text",
@@ -42,6 +46,7 @@ class ReviewAdmin(admin.ModelAdmin):
     empty_value_display = "-empty-"
 
 
+@admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = (
         "text",
@@ -54,9 +59,4 @@ class CommentAdmin(admin.ModelAdmin):
     empty_value_display = "-empty-"
 
 
-admin.site.register(Genre, GenreAdmin)
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Title, TitleAdmin)
-admin.site.register(Review, ReviewAdmin)
-admin.site.register(Comment, CommentAdmin)
 admin.site.register(TitleGenre)

@@ -29,7 +29,7 @@ class TitleListSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', ]
 
 
-class TitleSerealizer(serializers.ModelSerializer):
+class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(read_only=False,
                                             slug_field='slug',
                                             queryset=Category.objects.all())
@@ -37,7 +37,7 @@ class TitleSerealizer(serializers.ModelSerializer):
                                          read_only=False,
                                          slug_field='slug',
                                          queryset=Genre.objects.all())
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -55,12 +55,13 @@ class TitleSerealizer(serializers.ModelSerializer):
                     'year': 'Это поле не может быть больше текущего года.'
                 }
             )
+        if value < -3000:
+            raise serializers.ValidationError(
+                detail={
+                    'year': 'Год не может быть ранее 3000 до Н.Э..'
+                }
+            )
         return value
-
-    def get_rating(self, obj):
-        rating = obj.reviews.aggregate(Avg('score')).get('score__avg')
-        rating_rounded = round(rating) if rating else rating
-        return rating_rounded
 
     def create(self, validated_data):
         genres = validated_data.pop('genre')
@@ -84,14 +85,14 @@ class TitleSerealizer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели отзывов."""
     author = serializers.SlugRelatedField(
-        slug_field="username",
+        slug_field='username',
         read_only=True,
         default=serializers.CurrentUserDefault()
     )
 
     class Meta:
-        fields = ("id", "text", "author", "score", "pub_date")
-        read_only_fields = ("id", "title", "author", "pub_date")
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        read_only_fields = ('id', 'title', 'author', 'pub_date')
         model = Review
 
     def validate(self, data):
@@ -109,10 +110,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор модели комментариев."""
-    author = serializers.SlugRelatedField(slug_field="username",
+    author = serializers.SlugRelatedField(slug_field='username',
                                           read_only=True)
 
     class Meta:
-        fields = ("id", "text", "author", "pub_date")
-        read_only_fields = ("id", "author", "pub_date")
+        fields = ('id', 'text', 'author', 'pub_date')
+        read_only_fields = ('id', 'author', 'pub_date')
         model = Comment

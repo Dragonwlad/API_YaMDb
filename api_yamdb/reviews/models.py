@@ -3,14 +3,31 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from users.models import User
+from .validators import year_validator
+
+
+class Category(models.Model):
+    """Модель данных для категорий."""
+    name = models.CharField('Название',
+                            max_length=256)
+    slug = models.SlugField('Slug',
+                            max_length=50,
+                            unique=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
 
 class Genre(models.Model):
     """Модель данных для жанров."""
     name = models.CharField('Название',
-                            max_length=20)
+                            max_length=256)
     slug = models.SlugField('Slug',
-                            max_length=20,
+                            max_length=50,
                             unique=True
                             )
 
@@ -22,26 +39,12 @@ class Genre(models.Model):
         verbose_name_plural = 'Жанры'
 
 
-class Category(models.Model):
-    """Модель данных для категорий."""
-    name = models.CharField('Название',
-                            max_length=20)
-    slug = models.SlugField('Slug',
-                            max_length=20,
-                            unique=True)
-
-    def __str__(self) -> str:
-        return self.name
-
-    class Meta:
-        verbose_name = 'Категория'
-        verbose_name_plural = 'Категории'
-
-
 class Title (models.Model):
     """Модель данных для произведений."""
     name = models.CharField('Название', max_length=256)
-    year = models.IntegerField('Год')
+    year = models.IntegerField('Год',
+                               validators=[year_validator,]
+                               )
     description = models.TextField('Описание', blank=True)
     genre = models.ManyToManyField(Genre,
                                    verbose_name='Жанр',
