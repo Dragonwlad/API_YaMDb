@@ -2,13 +2,17 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 
-from api_yamdb.settings import ROLE_CHOICES
-
 
 class User(AbstractUser):
-    '''Класс пользователей.'''
-    username_regex = r'[\w.@+-]+$'
+    """Класс пользователей."""
+    class Role(models.TextChoices):
+        """Роли пользователей."""
+        ADMIN = 'admin', 'Администратор'
+        MODERATOR = 'moderator', 'Администратор'
+        USER = 'user', 'Администратор'
+
     # Валидация данных
+    username_regex = r'[\w.@+-]+$'
     username_validator = RegexValidator(
         regex=username_regex,
         message='Username может содержать только буквы, цифры и @/./+/-/_',
@@ -19,7 +23,6 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
     )
-
     confirmation_code = models.CharField(max_length=5, blank=True)
     email = models.EmailField(max_length=254, unique=True)
     first_name = models.CharField(max_length=150, blank=True)
@@ -27,8 +30,8 @@ class User(AbstractUser):
     bio = models.TextField(blank=True)
     role = models.CharField(
         max_length=25,
-        choices=ROLE_CHOICES,
-        default='user'
+        choices=Role.choices,
+        default=Role.USER
     )
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', ]
@@ -38,15 +41,15 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == ROLE_CHOICES[0][0] or self.is_superuser
+        return self.role == self.Role.ADMIN or self.is_superuser
 
     @property
     def is_moderator(self):
-        return self.role == ROLE_CHOICES[1][1]
+        return self.role == self.Role.MODERATOR
 
     @property
     def is_user(self):
-        return self.role == ROLE_CHOICES[2][2]
+        return self.role == self.Role.USER
 
     def __str__(self):
         return self.username
