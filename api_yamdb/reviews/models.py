@@ -106,8 +106,8 @@ class Review(models.Model):
             ),
         ]
 
-    def __str__(self):
-        return self.text[:settings.STRING_OUTPUT_LENGTH]
+        def __str__(self):
+            return self.text[:settings.STRING_OUTPUT_LENGTH]
 
 
 class Comment(models.Model):
