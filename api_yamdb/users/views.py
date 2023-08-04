@@ -1,7 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.filters import SearchFilter
@@ -9,14 +9,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from rest_framework import mixins
-
 from api.permissions import IsAdminOnly
 from users.serializers import (
     AdminCreateUserSerializer, UserCreateSerializer, UserPathSerializer)
 from users.models import User
-from api_yamdb.settings import SERVER_EMAIL
-
+from django.conf import settings
 
 def get_confirmation_code(user):
     return default_token_generator.make_token(user)
@@ -26,7 +23,7 @@ def send_confirmation_code(user_email, confirmation_code):
     send_mail(
         subject='Подтвердите ваш email адрес для завершения регистрации',
         message=f'Ваш код подтверждения: {confirmation_code}',
-        from_email=SERVER_EMAIL,
+        from_email=settings.SERVER_EMAIL,
         recipient_list=[user_email],
         fail_silently=True,
     )
@@ -127,3 +124,4 @@ class UserGetPath(APIView):
         serializer = UserPathSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        return self.get(request)
