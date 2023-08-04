@@ -1,16 +1,14 @@
 import csv
 from django.shortcuts import get_object_or_404
 from io import open
-from django.db.models import Avg
 from django.http import HttpResponse
 
 from reviews.models import Category, Genre, Title, TitleGenre, Review, Comment
 from users.models import User
 
 
-def data_import(request):
-
-    with open('static\data\category.csv', encoding='utf-8') as f:
+def category_import():
+    with open(r'static\data\category.csv', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             try:
@@ -18,10 +16,12 @@ def data_import(request):
                     id=row['id'],
                     name=row['name'],
                     slug=row['slug'])
-            except:
+            except ImportError:
                 print('Эта запись уже есть в базе')
 
-    with open('static\data\genre.csv', encoding='utf-8') as f:
+
+def genre_import():
+    with open(r'static\data\genre.csv', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             try:
@@ -29,9 +29,11 @@ def data_import(request):
                     id=row['id'],
                     name=row['name'],
                     slug=row['slug'])
-            except:
+            except ImportError:
                 print('Эта запись уже есть в базе')
 
+
+def title_import():
     with open(r'static\data\titles.csv', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -41,9 +43,11 @@ def data_import(request):
                                             name=row['name'],
                                             year=row['year'],
                                             category=category)
-            except:
+            except ImportError:
                 print('Эта запись уже есть в базе')
 
+
+def genre_title_import():
     with open(r'static\data\genre_title.csv', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -54,9 +58,11 @@ def data_import(request):
                     id=row['id'],
                     title=title,
                     genre=genre)
-            except:
+            except ImportError:
                 print('Эта запись уже есть в базе')
 
+
+def users_import():
     with open(r'static\data\users.csv', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -68,9 +74,11 @@ def data_import(request):
                                            bio=row['bio'],
                                            first_name=row['first_name'],
                                            last_name=row['last_name'])
-            except:
+            except ImportError:
                 print('Эта запись уже есть в базе')
 
+
+def review_import():
     with open(r'static\data\review.csv', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -83,9 +91,11 @@ def data_import(request):
                                              author=author,
                                              score=row['score'],
                                              pub_date=row['pub_date'])
-            except:
+            except ImportError:
                 print('Эта запись уже есть в базе')
 
+
+def comment_import():
     with open(r'static\data\comments.csv', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -98,13 +108,15 @@ def data_import(request):
                     text=row['text'],
                     author=author,
                     pub_date=row['pub_date'])
-            except:
+            except ImportError:
                 print('Эта запись уже есть в базе')
 
-    titles = Title.objects.all()
-    for title in titles:
-        title_rating = Title.objects.filter(id=title.id).aggregate(
-            Avg('reviews__score')).get('reviews__score__avg')
-        title.rating = round(title_rating)
-        title.save()
+
+def data_import(request):
+    category_import()
+    genre_import()
+    title_import()
+    genre_title_import()
+    review_import()
+    comment_import()
     return HttpResponse('Данные импортированы!')
