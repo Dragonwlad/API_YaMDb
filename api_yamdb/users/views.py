@@ -1,5 +1,4 @@
-import secrets
-
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
@@ -8,24 +7,26 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from rest_framework import mixins
 
 from api.permissions import IsAdminOnly
 from users.serializers import (
     AdminCreateUserSerializer, UserCreateSerializer, UserPathSerializer)
 from users.models import User
+from api_yamdb.settings import SERVER_EMAIL
 
 
-def get_confirmation_code():
-    return secrets.token_urlsafe(3)
+def get_confirmation_code(user):
+    return default_token_generator.make_token(user)
 
 
 def send_confirmation_code(user_email, confirmation_code):
     send_mail(
-        subject='confirmation_code',
-        message=f'confirmation_code - {confirmation_code}',
-        from_email='from@example.com',
+        subject='Подтвердите ваш email адрес для завершения регистрации',
+        message=f'Ваш код подтверждения: {confirmation_code}',
+        from_email=SERVER_EMAIL,
         recipient_list=[user_email],
         fail_silently=True,
     )
@@ -34,30 +35,41 @@ def send_confirmation_code(user_email, confirmation_code):
 @api_view(['POST', ])
 @permission_classes((AllowAny, ))
 def create_user(request):
-
+    """Самостоятельная регистрация пользователя."""
     serializer = UserCreateSerializer(data=request.data)
+    user_email = request.data.get('email')
+    username = request.data.get('username')
 
-    if serializer.is_valid():
-        user_email = request.data['email']
-        confirmation_code = get_confirmation_code()
-        serializer.save(
-            confirmation_code=confirmation_code
-        )
-        send_confirmation_code(user_email, confirmation_code)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    elif ('unique' in str(serializer.errors.get('email'))
-          and 'unique' in str(serializer.errors.get('username'))):
+    if User.objects.filter(username=username, email=user_email):
         user = User.objects.get(username=request.data['username'])
         send_confirmation_code(
             user_email=user.email,
             confirmation_code=user.confirmation_code
         )
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Пользователь с данным email уже существует. '
+             'Код подтверждения повторно отправлен.'
+             },
+            status=status.HTTP_200_OK
+        )
+
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    user = User.objects.get(username=username)
+    confirmation_code = get_confirmation_code(user)
+    serializer.save(
+        confirmation_code=confirmation_code
+    )
+    send_confirmation_code(user_email, confirmation_code)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UsersViewSet(viewsets.ModelViewSet):
+class UsersViewSet(mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.CreateModelMixin,
+                   mixins.ListModelMixin,
+                   mixins.RetrieveModelMixin,
+                   viewsets.GenericViewSet):
     """ViewSet для просмотра пользователей и редактирования
     данных пользователя."""
     queryset = User.objects.all()
@@ -69,8 +81,12 @@ class UsersViewSet(viewsets.ModelViewSet):
     search_fields = ('username', )
 
     def perform_create(self, serializer):
-        confirmation_code = get_confirmation_code()
-        serializer.save(confirmation_code=confirmation_code)
+        serializer.save()
+        user = User.objects.get(username=self.request.data.get('username'))
+        confirmation_code = get_confirmation_code(user)
+        serializer.save(
+            confirmation_code=confirmation_code
+        )
 
 
 @api_view(['POST', ])
@@ -109,7 +125,5 @@ class UserGetPath(APIView):
     def patch(self, request):
         user = request.user
         serializer = UserPathSerializer(user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()

@@ -145,3 +145,5 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 STRING_OUTPUT_LENGTH = 15
+
+SERVER_EMAIL = 'from@example.com'
