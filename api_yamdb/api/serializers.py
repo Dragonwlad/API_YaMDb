@@ -1,9 +1,9 @@
-from django.db.models import Avg
 from rest_framework import serializers
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
+import re
 
-from reviews.models import Category, Genre, Title, TitleGenre, Review, Comment
+from reviews.models import Category, Genre, Title, Review, Comment
+from users.models import User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -63,15 +63,6 @@ class TitleSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def create(self, validated_data):
-        genres = validated_data.pop('genre')
-        title = Title.objects.create(**validated_data)
-        for genre in genres:
-            current_genre = get_object_or_404(Genre, slug=genre)
-            TitleGenre.objects.create(
-                genre=current_genre, title=title)
-        return title
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['genre'] = GenreSerializer(
@@ -117,3 +108,46 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = ('id', 'author', 'pub_date')
         model = Comment
+
+
+class AdminCreateUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ['username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'bio',
+                  'role',
+                  ]
+        model = User
+        read_only_fields = ('confirmation_code',)
+
+    def validate_username(self, username):
+
+        pattern = r'^[\w.@+-]+$'
+        if username != 'me' and re.search(pattern, username):
+            return username
+        raise serializers.ValidationError(
+            'Имя не может содержать специальные символы и не равно "me"')
+
+
+class UserCreateSerializer(AdminCreateUserSerializer):
+
+    class Meta:
+        fields = ['username',
+                  'email',
+                  ]
+        model = User
+
+
+class UserPathSerializer(AdminCreateUserSerializer):
+
+    class Meta:
+        fields = ['username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'bio',
+                  ]
+        model = User

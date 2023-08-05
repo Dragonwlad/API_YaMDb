@@ -43,7 +43,7 @@ class Title (models.Model):
     """Модель данных для произведений."""
     name = models.CharField('Название', max_length=256)
     year = models.IntegerField('Год',
-                               validators=[year_validator,]
+                               validators=[year_validator, ]
                                )
     description = models.TextField('Описание', blank=True)
     genre = models.ManyToManyField(Genre,

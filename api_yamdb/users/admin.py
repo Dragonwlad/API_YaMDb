@@ -14,4 +14,5 @@ class UserAdmin(admin.ModelAdmin):
         'role'
     )
 
+
 admin.site.register(User, UserAdmin)
