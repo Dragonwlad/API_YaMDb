@@ -63,14 +63,14 @@ class TitleSerializer(serializers.ModelSerializer):
             )
         return value
 
-    # def to_representation(self, instance):
-    #     representation = super().to_representation(instance)
-    #     representation['genre'] = GenreSerializer(
-    #         instance.genre,
-    #         many=True,
-    #     ).data
-    #     representation['category'] = CategorySerializer(instance.category).data
-    #     return representation
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['genre'] = GenreSerializer(
+            instance.genre,
+            many=True,
+        ).data
+        representation['category'] = CategorySerializer(instance.category).data
+        return representation
 
 
 class ReviewSerializer(serializers.ModelSerializer):
