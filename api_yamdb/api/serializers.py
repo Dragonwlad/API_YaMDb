@@ -63,14 +63,14 @@ class TitleSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['genre'] = GenreSerializer(
-            instance.genre,
-            many=True,
-        ).data
-        representation['category'] = CategorySerializer(instance.category).data
-        return representation
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     representation['genre'] = GenreSerializer(
+    #         instance.genre,
+    #         many=True,
+    #     ).data
+    #     representation['category'] = CategorySerializer(instance.category).data
+    #     return representation
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -113,13 +113,13 @@ class CommentSerializer(serializers.ModelSerializer):
 class AdminCreateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = ['username',
+        fields = ('username',
                   'email',
                   'first_name',
                   'last_name',
                   'bio',
                   'role',
-                  ]
+                  )
         model = User
         read_only_fields = ('confirmation_code',)
 
@@ -135,19 +135,19 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
 class UserCreateSerializer(AdminCreateUserSerializer):
 
     class Meta:
-        fields = ['username',
+        fields = ('username',
                   'email',
-                  ]
+                  )
         model = User
 
 
 class UserPathSerializer(AdminCreateUserSerializer):
 
     class Meta:
-        fields = ['username',
+        fields = ('username',
                   'email',
                   'first_name',
                   'last_name',
                   'bio',
-                  ]
+                  )
         model = User
