@@ -18,7 +18,8 @@ from users.models import User
 from .serializers import (CategorySerializer, GenreSerializer,
                           ReviewSerializer, CommentSerializer,
                           TitleSerializer, AdminCreateUserSerializer,
-                          UserCreateSerializer, UserPathSerializer)
+                          UserCreateSerializer, UserPathSerializer,
+                          TitleCreateSerializer)
 from .permissions import IsAdminOrReadOnly, IsOwnerAdminModeratorOrReadOnly
 from .filters import TitleFilter
 from .permissions import IsAdminOnly
@@ -34,6 +35,11 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_class = TitleFilter
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     filterset_fields = ('category', 'genre', 'name', 'year')
+
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'partial_update':
+            return TitleCreateSerializer
+        return super().get_serializer_class()
 
 
 class CategoryGenreMixin(mixins.CreateModelMixin,
